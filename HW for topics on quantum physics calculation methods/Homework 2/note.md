@@ -1,4 +1,4 @@
-# Note for hw1
+# Note for hw2
 
 **本文件夹包含以下内容：**
 
