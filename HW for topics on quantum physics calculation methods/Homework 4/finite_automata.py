@@ -86,28 +86,28 @@ for i in range(N):
     MPO[i][6][6] = I
 
 for i in [0, 1, 3, 4, 6, 7]:
-    MPO[i][0][1] = _Jx_sigma_x
+    MPO[i][0][1] = _Jy_sigma_y
 
 for i in range(6):
-    MPO[i][0][2] = _Jy_sigma_y
+    MPO[i][0][2] = _Jx_sigma_x
 
 for i in [1, 4, 7]:
     MPO[i][1][3] = I
 
 for i in [1, 2, 4, 5, 7, 8]:
-    MPO[i][1][6] = sigma_x
+    MPO[i][1][6] = sigma_y
 
 for i in range(1, 7):
     MPO[i][2][4] = I
 
 for i in [2, 5, 8]:
-    MPO[i][3][6] = sigma_x
+    MPO[i][3][6] = sigma_y
 
 for i in range(2, 8):
     MPO[i][4][5] = I
 
 for i in range(3, N):
-    MPO[i][5][6] = sigma_y
+    MPO[i][5][6] = sigma_x
 
 
 # Construct the Hamiltonian using the MPO
