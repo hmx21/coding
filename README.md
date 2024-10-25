@@ -5,9 +5,7 @@
 - sample code
 - note for each homework
 
-## Test for copilot
-
-## Simple Turing Machine Simulation
+## Test for copilot: Simple Turing Machine Simulation
 - addition
 - reversion
 
