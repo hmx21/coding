@@ -10,4 +10,4 @@
 - reversion
 
 ## Test code for Pauli String
-- to be continued
+- `Pauli Strings(calculate the length)`
