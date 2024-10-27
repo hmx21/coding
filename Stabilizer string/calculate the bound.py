@@ -1,7 +1,10 @@
+import matplotlib.pyplot as plt
+import numpy as np
 import itertools
 
 
-def odot(x, y, n):
+def Odot(x, y, n):
+    # check the anti/commutation relation of two strings
     x1, x2 = x[:n], x[n:]
     y1, y2 = y[:n], y[n:]
     inner_product1 = sum(int(a) * int(b) for a, b in zip(x1, y2)) % 2
@@ -9,7 +12,9 @@ def odot(x, y, n):
     return (inner_product1 + inner_product2) % 2
 
 
-def count_repeats(s, n):
+def Count_Length(s, n):
+    # count the length of a Pauli string
+    # the length is defined as the number of non-identity Pauli operators
     x1, x2 = s[:n], s[n:]
     count1 = sum(int(bit) for bit in x1)
     count2 = sum(int(bit) for bit in x2)
@@ -17,30 +22,40 @@ def count_repeats(s, n):
     return count1 + count2 - repeats
 
 
-def generate_binary_strings(n):
-    binary_strings = ["".join(p) for p in itertools.product("01", repeat=2 * n)]
-    return sorted(binary_strings, key=lambda s: count_repeats(s, n), reverse=True)
+def Generate_Pauli_Group(n):
+    # generate all binary strings of length 2n(the whole Pauli group on n qubits)
+    Pauli_group = ["".join(p)
+                   for p in itertools.product("01", repeat=2 * n)]
+    return Pauli_group
 
 
-def get_generators(Z_1, binary_strings):
+def Get_Generators(Z_1, Pauli_group):
+    # get the generators of the Pauli group on n qubits
+    # the process is as follows:
+    # 1. find the first Z operator Z_1
+    # 2. find the first X operator X_1, the first string obeying odot(X_1, Z_1) = 1
+    # 3. find the second Z operator Z_2, the first string obeying odot(Z_2, Z_1) = 0 and odot(Z_2, X_1) = 0
+    # ...
     generators = {}
     n = len(Z_1) / 2
     n = int(len(Z_1) / 2)
     generators["Z"] = [None] * n
     generators["X"] = [None] * n
     generators["Z"][0] = Z_1
-    for candidate in binary_strings:
-        if odot(Z_1, candidate, n) == 1:
+
+    # process to get the generators, but we only have the "first" list of generators, depending on the order of the binary strings
+    for candidate in Pauli_group:
+        if Odot(Z_1, candidate, n) == 1:
             generators["X"][0] = candidate
             break
     for i in range(1, n):
         if generators["Z"][i] == None:
-            for candidate in binary_strings:
+            for candidate in Pauli_group:
                 Find_Z = True
                 for j in range(i):
                     if (
-                        odot(candidate, generators["Z"][j], n) == 1
-                        or odot(candidate, generators["X"][j], n) == 1
+                        Odot(candidate, generators["Z"][j], n) == 1
+                        or Odot(candidate, generators["X"][j], n) == 1
                         or candidate == generators["Z"][j]
                         or candidate == generators["X"][j]
                         or candidate == "0" * 2 * n
@@ -51,13 +66,13 @@ def get_generators(Z_1, binary_strings):
                     generators["Z"][i] = candidate
                     break
         if generators["X"][i] == None:
-            for candidate in binary_strings:
+            for candidate in Pauli_group:
                 Find_X = True
                 for j in range(i):
                     if (
-                        odot(candidate, generators["Z"][j], n) == 1
-                        or odot(candidate, generators["X"][j], n) == 1
-                        or odot(candidate, generators["Z"][i], n) == 0
+                        Odot(candidate, generators["Z"][j], n) == 1
+                        or Odot(candidate, generators["X"][j], n) == 1
+                        or Odot(candidate, generators["Z"][i], n) == 0
                         or candidate == generators["Z"][j]
                         or candidate == generators["X"][j]
                         or candidate == "0" * 2 * n
@@ -70,13 +85,14 @@ def get_generators(Z_1, binary_strings):
     return generators
 
 
-def generate_pauli_strings(generators, n):
+def Generate_Pauli_Strings(generators, n):
+    # generate all Pauli strings on n qubits, which has length of n initially
     blocks = {}
     blocks["Z"] = generators["Z"]
     blocks["X"] = generators["X"]
-    blocks["Y"] = [generators["Z"][i] + generators["X"][i] for i in range(n)]
     blocks["Y"] = [
-        bin(int(generators["Z"][i], 2) ^ int(generators["X"][i], 2))[2:].zfill(2 * n)
+        bin(int(generators["Z"][i], 2) ^ int(
+            generators["X"][i], 2))[2:].zfill(2 * n)
         for i in range(n)
     ]
     pauli_strings_repre = []
@@ -91,46 +107,103 @@ def generate_pauli_strings(generators, n):
     return pauli_strings_repre
 
 
-import matplotlib.pyplot as plt
-
-min_Z_1_s = []
-min_lengths = []
-min_ratios = []
-qubit_range = [1, 2, 3, 4, 5, 6]
-for n in qubit_range:
-    binary_strings = generate_binary_strings(n)
-    print(f"for n = {n} qubits, we obtain the follows:")
-    min_length = n
-    min_ratio = 1
-    min_Z_1 = None
-    count = 0
-    for Z_1 in binary_strings:
-        if Z_1 == "0" * 2 * n:
-            continue
+def Get_Pauli(P):
+    # get the Pauli operators from the Pauli string
+    n = int(len(P) / 2)
+    X_part = P[:n]
+    Z_part = P[n:]
+    pauli = ""
+    for i in range(n):
+        if X_part[i] == "1" and Z_part[i] == "1":
+            pauli += "Y"
+        elif X_part[i] == "1":
+            pauli += "X"
+        elif Z_part[i] == "1":
+            pauli += "Z"
         else:
-            generators = get_generators(Z_1, binary_strings)
-            paulis = generate_pauli_strings(generators, n)
-            average_length = sum(count_repeats(pauli, n) for pauli in paulis) / len(
-                paulis
-            )
-            ratio = average_length / n
-            if average_length < min_length:
-                min_length = average_length
-                min_ratio = ratio
-                min_Z_1 = Z_1
-            print(
-                f"for Z1 = {Z_1}, the average length is {average_length}, the ratio is {ratio}"
-            )
-    min_lengths.append(min_length)
-    min_ratios.append(min_ratio)
-    min_Z_1_s.append(min_Z_1)
-    print(
-        f"For n = {n} qubits, the minimal average length is {min_length}, the ratio is {min_ratio}, for Z1 = {min_Z_1}"
-    )
+            pauli += "I"
+    return pauli
 
-print(f"The minimal Z1s are {min_Z_1_s} for qubits {qubit_range}")
+
+def Get_Minimun_Cases(n, generators=None, random_pick=True):
+    # get the minimal average length for n qubits, store the results in a list
+    Pauli_group = Generate_Pauli_Group(n)
+    # store the minimal average length and the corresponding Pauli group
+    min_length = n
+    minimun_cases = []
+    # if we don't have the generators, we need to randomly pick one
+    if random_pick:
+        for Z_1 in Pauli_group:
+            if Z_1 == "0" * 2 * n:
+                continue
+            else:
+                generators = Get_Generators(Z_1, Pauli_group)
+                initial_n_length_Pauli = Generate_Pauli_Strings(generators, n)
+                average_length = sum(Count_Length(pauli, n) for pauli in initial_n_length_Pauli) / len(
+                    initial_n_length_Pauli
+                )
+                if average_length == min_length and average_length != n:
+                    minimun_cases.append(
+                        (average_length, initial_n_length_Pauli, generators))
+                if average_length < min_length:
+                    min_length = average_length
+                    minimun_cases.clear()
+                    minimun_cases.append(
+                        (min_length, initial_n_length_Pauli, generators))
+    # if we have the generators, we can directly calculate the average length(but may not the minimal one)
+    elif random_pick == False and generators != None:
+        initial_n_length_Pauli = Generate_Pauli_Strings(generators, n)
+        average_length = sum(Count_Length(pauli, n) for pauli in initial_n_length_Pauli) / len(
+            initial_n_length_Pauli
+        )
+        minimun_cases.append(
+            (average_length, initial_n_length_Pauli, generators))
+    return minimun_cases
+
+
+def Print_Minimun_Cases(minimun_cases):
+    # print the minimal average length and the corresponding Pauli group
+    for i, case in enumerate(minimun_cases):
+        # initialization
+        length = case[0]
+        Pauli_Strings = case[1]
+        generator = case[2]
+        num_of_qubit = len(generator["X"])
+        print(f"=============The #{i+1} minimun case=============")
+        print(f"The minimal average length is {length}")
+        print("The generators transform as follows:")
+        for i in range(num_of_qubit):
+            initial_pauli = Get_Pauli(bin(1 << i)[2:].zfill(2 * num_of_qubit))
+            final_pauli = Get_Pauli(generator["Z"][i])
+            print(f"Z_{i+1}: {initial_pauli}------>{final_pauli}")
+            initial_pauli = Get_Pauli(
+                bin(1 << (i+num_of_qubit))[2:].zfill(2 * num_of_qubit))
+            final_pauli = Get_Pauli(generator["X"][i])
+            print(f"X_{i+1}: {initial_pauli}------>{final_pauli}")
+        print("The Pauli strings are as follows:")
+        for i, pauli in enumerate(Pauli_Strings):
+            if i == len(Pauli_Strings) - 1:
+                print(Get_Pauli(pauli))
+            else:
+                print(Get_Pauli(pauli), end="、")
+
+
+def CNOT_tensor(n):
+    # generate the tensor product of CNOT gates
+    CNOT = [[1, 0, 0, 0], [0, 1, 0, 0],
+            [0, 0, 0, 1], [0, 0, 1, 0]]
+    CNOT_tensor = CNOT
+    for i in range(n - 2):
+        CNOT_tensor = np.kron(CNOT_tensor, CNOT)
+    return CNOT_tensor
+
+
+minimun_cases = Get_Minimun_Cases(3)
+Print_Minimun_Cases(minimun_cases)
+
 
 # Plotting the results
+"""
 plt.figure(figsize=(12, 6))
 
 plt.subplot(1, 2, 1)
@@ -148,3 +221,4 @@ plt.ylabel("Minimal Ratio")
 plt.tight_layout()
 plt.savefig("minimal_average_length_and_ratio.png")
 plt.show()
+"""
