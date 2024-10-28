@@ -279,6 +279,14 @@ class Clifford_Operator(object):
                 total_length += value.length
         return total_length / (3 ** len(self.generators["Z"]))
 
+    def Get_Pauli_Weight(self):
+        # get the weight of the Pauli strings
+        weight = 0
+        for key, value in self.all_pauli_strings.items():
+            if key.length == self.number_of_qubits:
+                weight += 1/3**value.length
+        return weight
+
     def Get_Generators_From_Gate(self):
         # get the generators of the Clifford group from the gate
         generators = self.initial_generators
