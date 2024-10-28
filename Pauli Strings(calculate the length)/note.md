@@ -122,6 +122,15 @@ The average length of the transformation by [('CNOT', (0, 1)), ('CNOT', (1, 2)),
 
 ![长度分布图](Distribution.png)
 
+构造`CNOT_cyclic`形如$\prod_{i=1}^nCNOT_{i,i+1}$（周期性边界条件），输出的平均长度结果如下，也是一组良好的线性关系（当然要在n>2的情况下）：
+```
+For 3 qubits, the average length of the transformation by [('CNOT', (0, 1)), ('CNOT', (1, 2)), ('CNOT', (2, 0))] is 2.185185185185185
+For 4 qubits, the average length of the transformation by [('CNOT', (0, 1)), ('CNOT', (1, 2)), ('CNOT', (2, 3)), ('CNOT', (3, 0))] is 2.9135802469135803
+For 5 qubits, the average length of the transformation by [('CNOT', (0, 1)), ('CNOT', (1, 2)), ('CNOT', (2, 3)), ('CNOT', (3, 4)), ('CNOT', (4, 0))] is 3.633744855967078
+For 6 qubits, the average length of the transformation by [('CNOT', (0, 1)), ('CNOT', (1, 2)), ('CNOT', (2, 3)), ('CNOT', (3, 4)), ('CNOT', (4, 5)), ('CNOT', (5, 0))] is 4.356652949245542
+For 7 qubits, the average length of the transformation by [('CNOT', (0, 1)), ('CNOT', (1, 2)), ('CNOT', (2, 3)), ('CNOT', (3, 4)), ('CNOT', (4, 5)), ('CNOT', (5, 6)), ('CNOT', (6, 0))] is 5.07864654778235
+```
+
 ## 代码注释（copilot生成，偷个懒……）
 
 ### 文件结构

@@ -200,7 +200,8 @@ class Clifford_Operator(object):
         # once we know the transformation of the generators, we can get the transformation of all the Pauli strings
         # thus we have all known the Clifford operator
         self.generators = generators
-        self.number_of_qubits = n if n != None else int(len(self.generators["Z"]))
+        self.number_of_qubits = n if n != None else int(
+            len(self.generators["Z"]))
         self.initial_generators = self.Get_Initial_Generators()
         # store the effect of the Clifford operator on all the Pauli strings
         self.all_pauli_strings = (
@@ -313,6 +314,14 @@ def Get_CNOT_Tensor_Product(n):
     return CNOT_tensor
 
 
+def Get_CNOT_Cyclic(n):
+    # get the cyclic CNOT gate on n qubits
+    CNOT_tensor = []
+    for i in range(n):
+        CNOT_tensor.append(("CNOT", (i, (i + 1) % n)))
+    return CNOT_tensor
+
+
 if __name__ == "__main__":
 
     # Result 0
@@ -348,6 +357,14 @@ if __name__ == "__main__":
         f"The average length of the transformation by {gate_list} is {CNOT_13_23_12.Get_Average_Length(number_of_qubits)}"
     )
     CNOT_13_23_12.Plot_Distribution(number_of_qubits)
+
+    # More for Result 2
+    for i in range(3, 8):
+        CNOT_cyclic = Get_CNOT_Cyclic(i)
+        CNOT_cyclic_operator = Clifford_Operator(None, CNOT_cyclic, i)
+        print(
+            f"For {i} qubits, the average length of the transformation by {CNOT_cyclic} is {CNOT_cyclic_operator.Get_Average_Length(i)}"
+        )
 
     # the fake!!! minimun cases
     # min_cases = Get_Minimun_Cases(number_of_qubits)
