@@ -53,13 +53,17 @@ YY -----> XZ
 ```
 
 由于每个Clifford conjugation事实上都是Pauli群的一个群同构，因此箭头可以打双向，总结如下：
-- Hadamard: $$ I \longleftrightarrow I \newline
+
+- Hadamard: 
+$$ I \longleftrightarrow I \newline
 Y \longleftrightarrow Y \newline
 Z \longleftrightarrow X $$
-- Phase: $$ I\longleftrightarrow I \newline
+- Phase: 
+$$ I\longleftrightarrow I \newline
 Z \longleftrightarrow Z \newline
 X \longleftrightarrow Y $$
-- CNOT: $$ II \longleftrightarrow II \newline
+- CNOT: 
+$$ II \longleftrightarrow II \newline
 ZI \longleftrightarrow ZI \newline
 IX \longleftrightarrow IX \newline
 ZX \longleftrightarrow ZX \newline
