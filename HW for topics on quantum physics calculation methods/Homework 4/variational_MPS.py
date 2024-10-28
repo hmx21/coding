@@ -2,30 +2,34 @@ import numpy as np
 import numpy.linalg as LA
 import scipy.sparse.linalg as LAs
 import Sub180221 as Sub
-import math, copy
+import math
+import copy
+
+# coupling constant
+g = 0.428
+
+# for H=\sum_j-(Sz_j*Sz_{j+1}+Sx_j)+g(Sx_jS_z{j+1}S_z{j+2}+Sz_jSz_{j+1}Sx_{j+2}), generate the corresponding MPO
+# the "S" in the above formula means "sigma", the Pauli matrix
 
 
-# for H=-\sum_j(Sz_j*Sy_{j+1}Sz_{j+2}+Sz_j*Sz_{j+1}+Sx_j), generate the corresponding MPO
-#    M =
-#    s0	-sz	0	-sx
-#    0	0	sy  sz
-#    0	0	0	sz
-#    0	0	0	s0
 def GetMpo_Obc(Dp):
     # Spin operators
     S0, Sp, Sm, Sz, Sx, Sy = Sub.SpinOper(Dp)
 
     # generate the MPO
-    Dmpo = 4
+    Dmpo = 6
     Mpo = np.zeros((Dmpo, Dp, Dmpo, Dp), dtype=complex)
 
     Mpo[0, :, 0, :] = S0
-    Mpo[0, :, 1, :] = -2 * Sz
-    Mpo[0, :, 3, :] = -2 * Sx
-    Mpo[1, :, 2, :] = 2 * Sy
+    Mpo[0, :, 1, :] = 2 * Sx
+    Mpo[0, :, 2, :] = 2 * Sz
+    Mpo[0, :, 5, :] = -2 * Sx
     Mpo[1, :, 3, :] = 2 * Sz
-    Mpo[2, :, 3, :] = 2 * Sz
-    Mpo[3, :, 3, :] = S0
+    Mpo[2, :, 4, :] = 2 * Sz
+    Mpo[2, :, 5, :] = -2 * Sz
+    Mpo[3, :, 5, :] = g * 2 * Sz
+    Mpo[4, :, 5, :] = g * 2 * Sx
+    Mpo[5, :, 5, :] = S0
 
     return Mpo
 
@@ -216,7 +220,8 @@ def MagnetZ(T):
     for i in range(Ns):
         if i == 0:
             Mz[i] += np.real(
-                Sub.NCon([T[i], Sz, np.conj(T[i])], [[1, 2, 4], [2, 3], [1, 3, 4]])
+                Sub.NCon([T[i], Sz, np.conj(T[i])], [
+                         [1, 2, 4], [2, 3], [1, 3, 4]])
             )
         else:
             Mz[i] += np.real(
@@ -250,7 +255,8 @@ def MagnetX(T):
     for i in range(Ns):
         if i == 0:
             Mx[i] += np.real(
-                Sub.NCon([T[i], Sx, np.conj(T[i])], [[1, 2, 4], [2, 3], [1, 3, 4]])
+                Sub.NCon([T[i], Sx, np.conj(T[i])], [
+                         [1, 2, 4], [2, 3], [1, 3, 4]])
             )
         else:
             Mx[i] += np.real(
@@ -285,27 +291,20 @@ def Get_Hamiltonian(Ns):
         # Sz_j*Sz_{j+1} term
         for site in range(Ns - 1):
             H[row][row] += (
-                -1 * 2 * (ReadBit(row, site) - 0.5) * 2 * (ReadBit(row, site + 1) - 0.5)
+                -1 * 2 * (ReadBit(row, site) - 0.5) * 2 *
+                (ReadBit(row, site + 1) - 0.5)
             )
-        # Sz_j*Sy_{j+1}Sz_{j+2} term
+        # Sx_j*Sz_{j+1}Sz_{j+2} term
         for site in range(Ns - 2):
-            column = FlipBit(row, site + 1)
-            if ReadBit(row, site + 1) == 1:
-                H[row][column] += (
-                    -1.0j
-                    * 2
-                    * (ReadBit(row, site) - 0.5)
-                    * 2
-                    * (ReadBit(row, site + 2) - 0.5)
-                )
-            else:
-                H[row][column] += (
-                    1.0j
-                    * 2
-                    * (ReadBit(row, site) - 0.5)
-                    * 2
-                    * (ReadBit(row, site + 2) - 0.5)
-                )
+            column = FlipBit(row, site)
+            H[row][column] += g * 2 * (
+                ReadBit(row, site + 1) - 0.5) * 2 * (ReadBit(row, site + 2) - 0.5)
+        # Sz_j*Sz_{j+1}Sx_{j+2} term
+        for site in range(Ns - 2):
+            column = FlipBit(row, site + 2)
+            H[row][column] += g * 2 * (ReadBit(row, site) - 0.5) * 2 * (
+                ReadBit(row, site + 1) - 0.5)
+
     return H
 
 
@@ -314,7 +313,8 @@ def MagnetZ_ED(V, Ns):
     Mz = np.zeros(Ns, dtype=complex)
     for site in range(Ns):
         for state in range(2**Ns):
-            Mz[site] += (np.abs(V[state]) ** 2 * 2 * (ReadBit(state, site) - 0.5))[0]
+            Mz[site] += (np.abs(V[state]) ** 2 * 2 *
+                         (ReadBit(state, site) - 0.5))[0]
     Mz = np.real(Mz)
     return Mz
 
