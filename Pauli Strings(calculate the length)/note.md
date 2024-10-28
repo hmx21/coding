@@ -118,6 +118,10 @@ YYY -----> IIY
 The average length of the transformation by [('CNOT', (0, 1)), ('CNOT', (1, 2)), ('CNOT', (2, 0))] is 2.185185185185185
 ```
 
+长度分布图绘制如下（原长为3，经过该Clifford操作后的长度变化）：
+
+![长度分布图](Distribution.png)
+
 ## 代码注释（copilot生成，偷个懒……）
 
 ### 文件结构
